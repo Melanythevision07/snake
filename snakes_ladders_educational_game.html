@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snakes & Ladders: Evolution of Education</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap');
+
+        :root {
+            --font-main: 'Fredoka', cursive, sans-serif;
+            --font-sub: 'Quicksand', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-sub);
+            background: #211510 url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            color: #f8fafc;
+            user-select: none;
+        }
+
+        h1, h2, h3, .font-heading {
+            font-family: var(--font-main);
+        }
+
+        /* Felt & Wood Tabletop Board Frame */
+        .wood-frame {
+            background: #3e2723;
+            background-image: radial-gradient(circle at center, #4e342e 0%, #27130c 100%), url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 2px 5px rgba(255,255,255,0.2), inset 0 -5px 15px rgba(0,0,0,0.9);
+            border: 12px solid #5d4037;
+            border-radius: 28px;
+        }
+
+        .board-felt {
+            background: #e2d9cc;
+            background-image: radial-gradient(circle at center, #ffffff 0%, #e0d0bd 100%), url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+        }
+
+        /* 3D Dice styling */
+        .dice-container {
+            perspective: 600px;
+        }
+
+        .cube {
+            width: 70px;
+            height: 70px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.3, 1.15);
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border: 2px solid #cbd5e1;
+            border-radius: 14px;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.15), 0 4px 8px rgba(0,0,0,0.2);
+            display: grid;
+            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .dot {
+            display: block;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b);
+            border-radius: 50%;
+            align-self: center;
+            justify-self: center;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
+        }
+
+        .dot-black {
+            background: radial-gradient(circle at 30% 30%, #334155, #0f172a);
+        }
+
+        /* Cube Face Rotations */
+        .face-1 { transform: rotateY(0deg) translateZ(35px); }
+        .face-2 { transform: rotateY(90deg) translateZ(35px); }
+        .face-3 { transform: rotateY(180deg) translateZ(35px); }
+        .face-4 { transform: rotateY(-90deg) translateZ(35px); }
+        .face-5 { transform: rotateX(90deg) translateZ(35px); }
+        .face-6 { transform: rotateX(-90deg) translateZ(35px); }
+
+        /* Player Pawn Tokens */
+        .pawn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid #ffffff;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.5), inset 0 -3px 6px rgba(0,0,0,0.4);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: absolute;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .pawn-p0 { background: radial-gradient(circle at 35% 35%, #ef4444, #991b1b); }
+        .pawn-p1 { background: radial-gradient(circle at 35% 35%, #3b82f6, #1d4ed8); }
+        .pawn-p2 { background: radial-gradient(circle at 35% 35%, #10b981, #047857); }
+        .pawn-p3 { background: radial-gradient(circle at 35% 35%, #f59e0b, #b45309); }
+
+        /* Analog Tile Styling */
+        .tile-card {
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .tile-card:hover {
+            transform: scale(1.02);
+        }
+
+        /* Curved Directional Arrows */
+        .snake-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        /* Glassmorphism Cards */
+        .card-analog {
+            background: #fffdfa;
+            background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+            border: 4px solid #d97706;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 10px rgba(217, 119, 6, 0.15);
+        }
+
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .active-turn-ring {
+            animation: bounce-subtle 1.2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-2 sm:p-4">
+
+    <header class="max-w-6xl w-full mx-auto flex flex-col sm:flex-row justify-between items-center gap-3 bg-stone-900/90 border border-amber-900/50 p-3 sm:p-4 rounded-2xl shadow-xl backdrop-blur mb-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-white text-xl shadow-lg border border-amber-400/40">
+                <i class="fa-solid fa-dice"></i>
+            </div>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-extrabold text-amber-200 tracking-wide">
+                    SNAKES & LADDERS <span class="text-amber-500 font-normal text-sm sm:text-base">| Educational Edition</span>
+                </h1>
+                <p class="text-xs text-stone-400">Classroom Trivia based on Arce, Deiner & Mela's topics</p>
+            </div>
+        </div>
+
+        <!-- Mode Controls & Tab Switcher -->
+        <div class="flex items-center gap-2">
+            <button onclick="switchView('game')" id="btnGameView" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition-all">
+                <i class="fa-solid fa-chess-board mr-1.5"></i> Game Board
+            </button>
+            <button onclick="switchView('questions')" id="btnQuestionsView" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700 transition-all">
+                <i class="fa-solid fa-list-check mr-1.5"></i> Questions Bank
+            </button>
+            <button onclick="openRulesModal()" class="p-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-400 border border-stone-700 text-sm" title="Rules & Help">
+                <i class="fa-solid fa-circle-question"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl w-full mx-auto flex-grow flex flex-col items-center justify-center">
+
+        <!-- ================= VIEW 1: GAME BOARD ================= -->
+        <div id="gameView" class="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left Side: Tabletop Board Frame -->
+            <div class="lg:col-span-8 w-full wood-frame p-3 sm:p-5 flex flex-col items-center relative overflow-hidden">
+                
+                <!-- Board Banner / Header -->
+                <div class="w-full flex justify-between items-center mb-3 px-2 text-stone-200 font-heading">
+                    <span class="text-xs sm:text-sm font-bold bg-amber-950/80 border border-amber-700/60 px-3 py-1 rounded-full text-amber-300">
+                        <i class="fa-solid fa-flag-checkered mr-1"></i> Goal: Tile 30
+                    </span>
+                    <span id="currentRoundText" class="text-xs sm:text-sm font-semibold text-stone-300">
+                        Round 1
+                    </span>
+                </div>
+
+                <!-- Board Surface Grid (5 rows x 6 cols = 30 tiles) -->
+                <div class="relative w-full max-w-[620px] aspect-[6/5] board-felt rounded-2xl p-2 sm:p-3 shadow-2xl border-2 border-stone-400/30">
+                    
+                    <!-- SVG Overlay for Ladders & Snakes -->
+                    <svg id="boardSvg" class="snake-canvas" viewBox="0 0 600 500" preserveAspectRatio="none">
+                        <!-- Defined via JS dynamically -->
+                    </svg>
+
+                    <!-- Tile Grid Container -->
+                    <div id="boardGrid" class="grid grid-cols-6 grid-rows-5 gap-1.5 sm:gap-2.5 w-full h-full relative z-10">
+                        <!-- Tiles dynamically inserted via JS -->
+                    </div>
+
+                    <!-- Pawn Overlay Container -->
+                    <div id="pawnsContainer" class="absolute inset-0 pointer-events-none z-20">
+                        <!-- Pawns rendered dynamically -->
+                    </div>
+
+                </div>
+
+                <!-- Footer legend on board frame -->
+                <div class="mt-3 w-full flex flex-wrap justify-around items-center gap-2 text-[11px] sm:text-xs text-amber-200/80 font-medium">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-ladder text-amber-400"></i> Climb Ladders</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-staff-snake text-emerald-400"></i> Beware Snakes</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-question text-purple-300"></i> Answer English Trivia</span>
+                </div>
+            </div>
+
+            <!-- Right Side: Analog Controls, 3D Dice, and Turn Status -->
+            <div class="lg:col-span-4 w-full flex flex-col gap-4">
+                
+                <!-- Active Turn Status Card -->
+                <div class="bg-stone-900/90 border-2 border-amber-900/60 rounded-2xl p-4 sm:p-5 shadow-xl backdrop-blur relative overflow-hidden">
+                    <div class="text-xs uppercase font-extrabold tracking-wider text-amber-500 mb-2 flex items-center justify-between">
+                        <span>Current Turn</span>
+                        <span id="turnCounter" class="text-stone-400 font-mono text-[11px]">Player 1 of 2</span>
+                    </div>
+
+                    <div id="activePlayerCard" class="flex items-center gap-3 bg-stone-800/80 p-3 rounded-xl border border-stone-700 active-turn-ring">
+                        <div id="activePlayerAvatar" class="w-10 h-10 rounded-full pawn-p0 flex items-center justify-center font-bold text-lg shadow">
+                            P1
+                        </div>
+                        <div>
+                            <h3 id="activePlayerName" class="text-lg font-bold text-white leading-tight">Player 1</h3>
+                            <p id="activePlayerTile" class="text-xs text-amber-300">On Tile 1 (Start)</p>
+                        </div>
+                    </div>
+
+                    <!-- Dice & Roll Action Area -->
+                    <div class="mt-5 flex flex-col items-center justify-center bg-stone-950/60 p-4 rounded-xl border border-stone-800/80 gap-3">
+                        
+                        <!-- 3D Dice Component -->
+                        <div class="dice-container py-2">
+                            <div id="diceCube" class="cube">
+                                <!-- Face 1 -->
+                                <div class="cube-face face-1">
+                                    <div></div><div></div><div></div>
+                                    <div></div><span class="dot"></span><div></div>
+                                    <div></div><div></div><div></div>
+                                </div>
+                                <!-- Face 2 -->
+                                <div class="cube-face face-2">
+                                    <span class="dot dot-black"></span><div></div><div></div>
+                                    <div></div><div></div><div></div>
+                                    <div></div><div></div><span class="dot dot-black"></span>
+                                </div>
+                                <!-- Face 3 -->
+                                <div class="cube-face face-3">
+                                    <span class="dot dot-black"></span><div></div><div></div>
+                                    <div></div><span class="dot dot-black"></span><div></div>
+                                    <div></div><div></div><span class="dot dot-black"></span>
+                                </div>
+                                <!-- Face 4 -->
+                                <div class="cube-face face-4">
+                                    <span class="dot dot-black"></span><div></div><span class="dot dot-black"></span>
+                                    <div></div><div></div><div></div>
+                                    <span class="dot dot-black"></span><div></div><span class="dot dot-black"></span>
+                                </div>
+                                <!-- Face 5 -->
+                                <div class="cube-face face-5">
+                                    <span class="dot dot-black"></span><div></div><span class="dot dot-black"></span>
+                                    <div></div><span class="dot dot-black"></span><div></div>
+                                    <span class="dot dot-black"></span><div></div><span class="dot dot-black"></span>
+                                </div>
+                                <!-- Face 6 -->
+                                <div class="cube-face face-6">
+                                    <span class="dot dot-black"></span><div></div><span class="dot dot-black"></span>
+                                    <span class="dot dot-black"></span><div></div><span class="dot dot-black"></span>
+                                    <span class="dot dot-black"></span><div></div><span class="dot dot-black"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Roll Button -->
+                        <button id="btnRollDice" onclick="rollDice()" class="w-full py-3 px-6 rounded-xl font-heading font-extrabold text-base bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-stone-950 shadow-lg border border-amber-300/40 transform active:scale-95 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-dice-five text-lg"></i> ROLL DICE
+                        </button>
+                    </div>
+
+                    <!-- Action Status Message -->
+                    <p id="gameStatusText" class="mt-3 text-xs text-center text-stone-300 font-medium italic min-h-[32px] flex items-center justify-center">
+                        Roll the dice to start your turn!
+                    </p>
+                </div>
+
+                <!-- Players Leaderboard Panel -->
+                <div class="bg-stone-900/90 border border-stone-800 rounded-2xl p-4 shadow-xl">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs uppercase font-extrabold text-stone-400 tracking-wider">
+                            <i class="fa-solid fa-users mr-1"></i> Players Overview
+                        </h3>
+                        <!-- Player Count Selector -->
+                        <div class="flex gap-1 bg-stone-950 p-1 rounded-lg border border-stone-800">
+                            <button onclick="setPlayerCount(1)" id="btnP1" class="px-2 py-0.5 text-xs rounded font-bold text-stone-400 hover:text-white">1P</button>
+                            <button onclick="setPlayerCount(2)" id="btnP2" class="px-2 py-0.5 text-xs rounded font-bold bg-amber-600 text-white">2P</button>
+                            <button onclick="setPlayerCount(3)" id="btnP3" class="px-2 py-0.5 text-xs rounded font-bold text-stone-400 hover:text-white">3P</button>
+                            <button onclick="setPlayerCount(4)" id="btnP4" class="px-2 py-0.5 text-xs rounded font-bold text-stone-400 hover:text-white">4P</button>
+                        </div>
+                    </div>
+
+                    <div id="playersList" class="space-y-2">
+                        <!-- Player list rendered dynamically -->
+                    </div>
+
+                    <button onclick="resetGame()" class="mt-4 w-full py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-rotate-right"></i> Reset Game
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= VIEW 2: QUESTION BANK EDITING ================= -->
+        <div id="questionsView" class="w-full hidden space-y-5">
+            <div class="bg-stone-900/90 border border-amber-900/50 rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-amber-200">
+                            <i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i> English Question Bank Customizer
+                        </h2>
+                        <p class="text-xs text-stone-400">Add or edit classroom questions based on Arce, Deiner, and Mela's topics.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="loadDefaultQuestions()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold rounded-xl border border-stone-700 transition-all">
+                            <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Restore Defaults
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form to Add/Edit Questions -->
+                <form id="questionForm" onsubmit="handleQuestionSubmit(event)" class="bg-stone-950/60 p-4 rounded-xl border border-stone-800 space-y-3 mb-6">
+                    <input type="hidden" id="editQIndex" value="-1">
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <div class="md:col-span-8">
+                            <label class="block text-xs font-bold text-stone-400 mb-1">Question Prompt (in English)</label>
+                            <input type="text" id="qPrompt" required placeholder="e.g. Which tool allows students to research information in traditional education?" class="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div class="md:col-span-4">
+                            <label class="block text-xs font-bold text-stone-400 mb-1">Speaker / Category</label>
+                            <select id="qCategory" class="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500">
+                                <option value="Arce - Traditional Education">Arce - Traditional Education</option>
+                                <option value="Deiner - Digital Education">Deiner - Digital Education</option>
+                                <option value="Mela - AI & Future">Mela - AI & Future</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-emerald-400 mb-1">Correct Answer (Option A)</label>
+                            <input type="text" id="qOptA" required placeholder="Correct Answer" class="w-full bg-stone-900 border border-emerald-900/60 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-400 mb-1">Distractor 1 (Option B)</label>
+                            <input type="text" id="qOptB" required placeholder="Wrong Option" class="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-400 mb-1">Distractor 2 (Option C)</label>
+                            <input type="text" id="qOptC" required placeholder="Wrong Option" class="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-400 mb-1">Distractor 3 (Option D)</label>
+                            <input type="text" id="qOptD" required placeholder="Wrong Option" class="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="cancelQEdit()" id="btnCancelQ" class="hidden px-4 py-2 bg-stone-800 text-stone-300 rounded-xl text-xs font-bold">Cancel</button>
+                        <button type="submit" id="btnSaveQ" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-md transition-all">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Question
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Questions Table -->
+                <div class="overflow-x-auto rounded-xl border border-stone-800">
+                    <table class="w-full text-left text-xs sm:text-sm text-stone-300">
+                        <thead class="bg-stone-950 text-xs uppercase text-stone-400 font-bold border-b border-stone-800">
+                            <tr>
+                                <th class="py-3 px-4">#</th>
+                                <th class="py-3 px-4">Topic</th>
+                                <th class="py-3 px-4">Question Prompt</th>
+                                <th class="py-3 px-4">Correct Answer</th>
+                                <th class="py-3 px-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questionsTableBody" class="divide-y divide-stone-800/60 bg-stone-900/40">
+                            <!-- Dynamic rows via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Vintage Card Popup for English Questions -->
+    <div id="questionModal" class="fixed inset-0 bg-stone-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="card-analog max-w-lg w-full rounded-3xl p-6 sm:p-8 text-stone-900 relative shadow-2xl transform scale-95 transition-all">
+            
+            <div class="flex justify-between items-center mb-4 border-b border-amber-900/20 pb-3">
+                <span id="modalSpeakerTag" class="text-xs font-bold uppercase tracking-wider bg-amber-200 text-amber-900 px-3 py-1 rounded-full border border-amber-400">
+                    Category Tag
+                </span>
+                <span class="text-xs font-bold text-amber-800">
+                    <i class="fa-solid fa-circle-question mr-1"></i> Challenge Tile
+                </span>
+            </div>
+
+            <!-- Question text -->
+            <h3 id="modalQuestionText" class="text-base sm:text-lg font-bold text-stone-900 mb-6 leading-relaxed font-heading">
+                Question prompt goes here?
+            </h3>
+
+            <!-- Options Grid -->
+            <div id="modalOptionsContainer" class="space-y-3 mb-6">
+                <!-- Buttons dynamically generated -->
+            </div>
+
+            <div id="modalFeedback" class="hidden p-3 rounded-xl text-center font-bold text-xs sm:text-sm mb-4">
+                <!-- Feedback message -->
+            </div>
+
+            <p class="text-[11px] text-stone-500 italic text-center">
+                Correct answer: Stay on tile & enjoy! | Wrong answer: Slide back 2 steps!
+            </p>
+
+        </div>
+    </div>
+
+    <div id="victoryModal" class="fixed inset-0 bg-stone-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-gradient-to-b from-stone-900 to-stone-950 border-4 border-amber-500/80 rounded-3xl max-w-md w-full p-8 text-center shadow-2xl relative">
+            <div class="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 border-2 border-amber-400 shadow-inner">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-amber-300 font-heading mb-1">VICTORY!</h2>
+            <p id="winnerMessage" class="text-lg font-bold text-white mb-4">Player 1 wins the game!</p>
+            <p class="text-xs text-stone-400 mb-6 leading-relaxed">
+                Congratulations on completing the Educational Snakes & Ladders journey through traditional, digital, and AI-driven learning!
+            </p>
+            <button onclick="closeVictoryModal(); resetGame();" class="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-extrabold text-sm rounded-xl shadow-lg transition-all">
+                PLAY AGAIN
+            </button>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="rulesModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-stone-900 border border-stone-700 rounded-2xl max-w-md w-full p-6 text-stone-200 relative shadow-2xl">
+            <button onclick="closeRulesModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-lg font-bold text-amber-300 font-heading mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-scroll"></i> How to Play
+            </h3>
+            <ul class="text-xs space-y-2.5 text-stone-300 leading-relaxed list-disc list-inside">
+                <li><strong class="text-amber-200">Objective:</strong> Be the first player to reach or pass <strong class="text-amber-400">Tile 30</strong>.</li>
+                <li><strong class="text-amber-200">Rolling:</strong> Click <em>ROLL DICE</em> to move your pawn along the serpentine path.</li>
+                <li><strong class="text-amber-200">Ladders:</strong> Land on a ladder base to climb up to higher tiles!</li>
+                <li><strong class="text-amber-200">Snakes:</strong> Land on a snake head and slide down to lower tiles!</li>
+                <li><strong class="text-amber-200">Trivia Tiles:</strong> Landing on designated tiles triggers an English question based on Arce, Deiner, or Mela's topics.
+                    <br><span class="text-stone-400 pl-4 border-l border-amber-500/30 block mt-1">&bull; Correct answer = Stay on your tile.<br>&bull; Wrong answer = Move back 2 steps!</span>
+                </li>
+            </ul>
+            <button onclick="closeRulesModal()" class="mt-6 w-full py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-xs">
+                Got it, Let's Play!
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="max-w-6xl w-full mx-auto mt-4 py-2 text-center text-xs text-stone-500">
+        Classroom Snakes & Ladders Interactive Game &bull; Created for English Presentation Activity
+    </footer>
+
+    <script>
+        /* ==================== GAME CONFIGURATION & DATA ==================== */
+        
+        // Default English Trivia Questions based on the presentation topics
+        const DEFAULT_QUESTIONS = [
+            // Arce - Traditional Education
+            {
+                prompt: "Where did learning traditionally take place before computers and coding?",
+                category: "Arce - Traditional Education",
+                options: ["In physical classrooms with printed books", "On virtual cloud servers", "Through AI mobile applications", "In online metaverses"],
+                answer: 0
+            },
+            {
+                prompt: "In traditional education, how did students manually research information?",
+                category: "Arce - Traditional Education",
+                options: ["Using libraries and printed encyclopedias", "By asking ChatGPT", "Through Google Search APIs", "Using online databases"],
+                answer: 0
+            },
+            {
+                prompt: "What characterization best describes the pace of learning in traditional systems?",
+                category: "Arce - Traditional Education",
+                options: ["Fixed pace guided by the teacher for everyone", "Adaptive self-paced AI algorithms", "Instant real-time sync", "Personalized flexible paths"],
+                answer: 0
+            },
+
+            // Deiner - Modern & Digital Education
+            {
+                prompt: "Which platforms allow borderless learning beyond physical classrooms?",
+                category: "Deiner - Digital Education",
+                options: ["Google Classroom and Moodle", "Physical library archives", "Paper encyclopedias", "Blackboards and chalk"],
+                answer: 0
+            },
+            {
+                prompt: "What does modern digital integration provide to students instantly?",
+                category: "Deiner - Digital Education",
+                options: ["Immediate access to documentation, APIs, and repositories", "Printed textbooks by mail", "Chalkboard cleaning supplies", "Handwritten library catalog cards"],
+                answer: 0
+            },
+            {
+                prompt: "How do cloud-based tools transform student teamwork?",
+                category: "Deiner - Digital Education",
+                options: ["They allow students to collaborate in real time anywhere", "They force students to meet only in libraries", "They prevent group communication", "They replace all human interactions"],
+                answer: 0
+            },
+
+            // Mela - AI & Future Education
+            {
+                prompt: "What role do Adaptive AI Tutors play in the future of education?",
+                category: "Mela - AI & Future Education",
+                options: ["They adapt learning paths to each student's needs and pace", "They replace the need for curiosity", "They print physical textbooks", "They enforce identical fixed testing for all"],
+                answer: 0
+            },
+            {
+                prompt: "Which technologies enable immersive real-time simulations for students?",
+                category: "Mela - AI & Future Education",
+                options: ["Virtual Reality (VR) and Augmented Reality (AR)", "Blackboards and overhead projectors", "Printed encyclopedias", "Analog radios"],
+                answer: 0
+            },
+            {
+                prompt: "According to Mela's topic, what shift is happening in modern learning focus?",
+                category: "Mela - AI & Future Education",
+                options: ["From memorization toward critical thinking & problem solving", "From problem solving to pure memorization", "From digital tools back to paper only", "From collaboration to isolated learning"],
+                answer: 0
+            },
+            {
+                prompt: "According to Bill Gates' famous quote, what is the true relationship between tech and teachers?",
+                category: "Mela - AI & Future Education",
+                options: ["Tech is just a tool; teachers are key to motivating students", "Tech completely replaces teachers", "Teachers are no longer necessary", "Tech is less important than blackboards"],
+                answer: 0
+            }
+        ];
+
+        // Snakes and Ladders Mapping on 30-Tile Grid
+        // Key = Start tile, Value = Destination tile
+        const LADDERS = {
+            3: 11,   // Base on Tile 3 -> climbs to Tile 11
+            8: 16,   // Base on Tile 8 -> climbs to Tile 16
+            14: 22   // Base on Tile 14 -> climbs to Tile 22
+        };
+
+        const SNAKES = {
+            21: 9,   // Head on Tile 21 -> slides to Tile 9
+            24: 13,  // Head on Tile 24 -> slides to Tile 13
+            29: 19   // Head on Tile 29 -> slides to Tile 19
+        };
+
+        // Question Tiles (Non-ladder, non-snake tiles designated for trivia)
+        const TRIVIA_TILES = [2, 5, 7, 10, 12, 15, 17, 20, 23, 26, 28];
+
+        // Colors for 30 tiles matching reference image serpentine style
+        const TILE_COLORS = [
+            'bg-lime-200 text-stone-900 border-lime-300',      // Green
+            'bg-amber-200 text-stone-900 border-amber-300',    // Orange
+            'bg-purple-200 text-stone-900 border-purple-300',  // Purple
+            'bg-cyan-200 text-stone-900 border-cyan-300',      // Cyan
+            'bg-rose-200 text-stone-900 border-rose-300'       // Pink
+        ];
+
+        /* ==================== STATE VARIABLES ==================== */
+        let questionsList = JSON.parse(localStorage.getItem('snakes_questions_en')) || [...DEFAULT_QUESTIONS];
+        let playerCount = 2;
+        let players = [];
+        let activePlayerIndex = 0;
+        let isRolling = false;
+        let currentQuestionObj = null;
+
+        /* ==================== BOARD INITIALIZATION ==================== */
+        
+        window.onload = function() {
+            initPlayers();
+            renderBoardGrid();
+            renderPawns();
+            drawSnakesAndLaddersSvg();
+            renderQuestionsTable();
+            updateTurnUI();
+            
+            // Handle window resize for dynamic SVG alignment
+            window.addEventListener('resize', drawSnakesAndLaddersSvg);
+        };
+
+        function initPlayers() {
+            players = [];
+            const colors = ['pawn-p0', 'pawn-p1', 'pawn-p2', 'pawn-p3'];
+            const names = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+
+            for (let i = 0; i < playerCount; i++) {
+                players.push({
+                    id: i,
+                    name: names[i],
+                    colorClass: colors[i],
+                    tile: 1
+                });
+            }
+            activePlayerIndex = 0;
+        }
+
+        function setPlayerCount(count) {
+            playerCount = count;
+            // Update button styles
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`btnP${i}`);
+                if (i === count) {
+                    btn.className = "px-2 py-0.5 text-xs rounded font-bold bg-amber-600 text-white";
+                } else {
+                    btn.className = "px-2 py-0.5 text-xs rounded font-bold text-stone-400 hover:text-white";
+                }
+            }
+            resetGame();
+        }
+
+        // Generate the serpentine 5x6 grid matching the uploaded reference picture
+        function renderBoardGrid() {
+            const grid = document.getElementById('boardGrid');
+            grid.innerHTML = '';
+
+            // Rows: 5 (Row 5 top: 25-30, Row 4: 24-19, Row 3: 13-18, Row 2: 12-7, Row 1 bottom: 1-6)
+            const rows = [
+                [25, 26, 27, 28, 29, 30], // Top row (L-to-R)
+                [24, 23, 22, 21, 20, 19], // 4th row (R-to-L)
+                [13, 14, 15, 16, 17, 18], // 3rd row (L-to-R)
+                [12, 11, 10, 9, 8, 7],    // 2nd row (R-to-L)
+                [1, 2, 3, 4, 5, 6]        // Bottom row (L-to-R)
+            ];
+
+            rows.forEach((rowTiles) => {
+                rowTiles.forEach((tileNum) => {
+                    const tileDiv = document.createElement('div');
+                    tileDiv.id = `tile-${tileNum}`;
+                    
+                    // Assign tile colors cyclically
+                    const colorIndex = (tileNum - 1) % TILE_COLORS.length;
+                    const colorClass = TILE_COLORS[colorIndex];
+
+                    tileDiv.className = `tile-card ${colorClass} border-2 rounded-xl p-1 sm:p-2 relative flex flex-col justify-between items-center select-none`;
+
+                    // Content inside tile
+                    let specialIcon = '';
+                    if (tileNum === 30) {
+                        specialIcon = `<i class="fa-solid fa-trophy text-amber-500 text-lg sm:text-2xl animate-bounce"></i>`;
+                    } else if (LADDERS[tileNum]) {
+                        specialIcon = `<i class="fa-solid fa-ladder text-amber-700 text-xs sm:text-sm"></i>`;
+                    } else if (SNAKES[tileNum]) {
+                        specialIcon = `<i class="fa-solid fa-staff-snake text-emerald-700 text-xs sm:text-sm"></i>`;
+                    } else if (TRIVIA_TILES.includes(tileNum)) {
+                        specialIcon = `<i class="fa-solid fa-circle-question text-purple-600/70 text-xs sm:text-sm"></i>`;
+                    }
+
+                    tileDiv.innerHTML = `
+                        <span class="text-xs sm:text-base font-extrabold font-heading self-start leading-none opacity-80">${tileNum}</span>
+                        <div class="my-auto">${specialIcon}</div>
+                    `;
+
+                    grid.appendChild(tileDiv);
+                });
+            });
+        }
+
+        /* ==================== DRAWING SNAKES & LADDERS (SVG) ==================== */
+        function drawSnakesAndLaddersSvg() {
+            const svg = document.getElementById('boardSvg');
+            svg.innerHTML = '';
+
+            const boardRect = document.getElementById('boardGrid').getBoundingClientRect();
+            if (!boardRect.width) return;
+
+            // Helper to get center coordinates of a tile relative to SVG viewBox (600 x 500)
+            function getTileCoords(tileNum) {
+                const el = document.getElementById(`tile-${tileNum}`);
+                if (!el) return { x: 0, y: 0 };
+                const rect = el.getBoundingClientRect();
+                
+                const x = ((rect.left + rect.width / 2 - boardRect.left) / boardRect.width) * 600;
+                const y = ((rect.top + rect.height / 2 - boardRect.top) / boardRect.height) * 500;
+                return { x, y };
+            }
+
+            // Draw Ladders
+            Object.entries(LADDERS).forEach(([start, end]) => {
+                const p1 = getTileCoords(start);
+                const p2 = getTileCoords(end);
+
+                const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                
+                // Draw ladder rails
+                const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line1.setAttribute('x1', p1.x - 8); line1.setAttribute('y1', p1.y);
+                line1.setAttribute('x2', p2.x - 8); line1.setAttribute('y2', p2.y);
+                line1.setAttribute('stroke', '#a16207'); line1.setAttribute('stroke-width', '6');
+                line1.setAttribute('stroke-linecap', 'round');
+
+                const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line2.setAttribute('x1', p1.x + 8); line2.setAttribute('y1', p1.y);
+                line2.setAttribute('x2', p2.x + 8); line2.setAttribute('y2', p2.y);
+                line2.setAttribute('stroke', '#a16207'); line2.setAttribute('stroke-width', '6');
+                line2.setAttribute('stroke-linecap', 'round');
+
+                group.appendChild(line1);
+                group.appendChild(line2);
+
+                // Draw rungs
+                const rungsCount = 5;
+                for (let i = 1; i < rungsCount; i++) {
+                    const rx1 = p1.x - 8 + (p2.x - p1.x) * (i / rungsCount);
+                    const ry1 = p1.y + (p2.y - p1.y) * (i / rungsCount);
+                    const rx2 = p1.x + 8 + (p2.x - p1.x) * (i / rungsCount);
+                    const ry2 = p1.y + (p2.y - p1.y) * (i / rungsCount);
+
+                    const rung = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    rung.setAttribute('x1', rx1); rung.setAttribute('y1', ry1);
+                    rung.setAttribute('x2', rx2); rung.setAttribute('y2', ry2);
+                    rung.setAttribute('stroke', '#ca8a04'); rung.setAttribute('stroke-width', '4');
+                    group.appendChild(rung);
+                }
+
+                svg.appendChild(group);
+            });
+
+            // Draw Curved Animated Snakes
+            Object.entries(SNAKES).forEach(([head, tail]) => {
+                const pHead = getTileCoords(head);
+                const pTail = getTileCoords(tail);
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                
+                // Curve control points
+                const midX = (pHead.x + pTail.x) / 2 + 40;
+                const midY = (pHead.y + pTail.y) / 2;
+
+                const d = `M ${pHead.x} ${pHead.y} Q ${midX} ${midY} ${pTail.x} ${pTail.y}`;
+                
+                path.setAttribute('d', d);
+                path.setAttribute('stroke', '#15803d');
+                path.setAttribute('stroke-width', '12');
+                path.setAttribute('fill', 'none');
+                path.setAttribute('stroke-linecap', 'round');
+                path.setAttribute('filter', 'drop-shadow(0px 4px 6px rgba(0,0,0,0.3))');
+
+                // Inner pattern line for snake body
+                const pathInner = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                pathInner.setAttribute('d', d);
+                pathInner.setAttribute('stroke', '#86efac');
+                pathInner.setAttribute('stroke-width', '4');
+                pathInner.setAttribute('fill', 'none');
+                pathInner.setAttribute('stroke-dasharray', '6 4');
+
+                // Head Circle
+                const headCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                headCircle.setAttribute('cx', pHead.x);
+                headCircle.setAttribute('cy', pHead.y);
+                headCircle.setAttribute('r', '9');
+                headCircle.setAttribute('fill', '#166534');
+
+                svg.appendChild(path);
+                svg.appendChild(pathInner);
+                svg.appendChild(headCircle);
+            });
+        }
+
+        /* ==================== PAWN RENDERING & MOVEMENT ==================== */
+        
+        function renderPawns() {
+            const container = document.getElementById('pawnsContainer');
+            container.innerHTML = '';
+
+            const gridRect = document.getElementById('boardGrid').getBoundingClientRect();
+            if (!gridRect.width) return;
+
+            players.forEach((p) => {
+                const tileEl = document.getElementById(`tile-${p.tile}`);
+                if (!tileEl) return;
+
+                const tileRect = tileEl.getBoundingClientRect();
+
+                // Calculate relative position inside grid container
+                const left = (tileRect.left - gridRect.left) + (tileRect.width / 2) - 14 + (p.id * 6 - 8);
+                const top = (tileRect.top - gridRect.top) + (tileRect.height / 2) - 14 + (p.id * 4 - 6);
+
+                const pawn = document.createElement('div');
+                pawn.id = `pawn-${p.id}`;
+                pawn.className = `pawn ${p.colorClass}`;
+                pawn.style.transform = `translate(${left}px, ${top}px)`;
+                pawn.textContent = `P${p.id + 1}`;
+
+                container.appendChild(pawn);
+            });
+
+            updatePlayersListUI();
+        }
+
+        /* ==================== GAME LOGIC & 3D DICE ROLL ==================== */
+
+        function rollDice() {
+            if (isRolling) return;
+            isRolling = true;
+
+            const btn = document.getElementById('btnRollDice');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const diceCube = document.getElementById('diceCube');
+            const statusText = document.getElementById('gameStatusText');
+
+            const rolledValue = Math.floor(Math.random() * 6) + 1;
+
+            // Random rotation counts for realistic physics animation
+            const xRot = 360 * 3 + getFaceRotation(rolledValue).x;
+            const yRot = 360 * 3 + getFaceRotation(rolledValue).y;
+
+            diceCube.style.transform = `rotateX(${xRot}deg) rotateY(${yRot}deg)`;
+            statusText.textContent = `${players[activePlayerIndex].name} is rolling the dice...`;
+
+            setTimeout(() => {
+                statusText.textContent = `${players[activePlayerIndex].name} rolled a ${rolledValue}!`;
+                movePlayerSteps(activePlayerIndex, rolledValue);
+            }, 1200);
+        }
+
+        function getFaceRotation(val) {
+            switch(val) {
+                case 1: return { x: 0, y: 0 };
+                case 2: return { x: 0, y: -90 };
+                case 3: return { x: 0, y: -180 };
+                case 4: return { x: 0, y: 90 };
+                case 5: return { x: -90, y: 0 };
+                case 6: return { x: 90, y: 0 };
+                default: return { x: 0, y: 0 };
+            }
+        }
+
+        function movePlayerSteps(playerIdx, steps) {
+            let p = players[playerIdx];
+            let targetTile = p.tile + steps;
+
+            if (targetTile > 30) {
+                targetTile = 30; // Cap at goal tile
+            }
+
+            let stepCount = 0;
+            const interval = setInterval(() => {
+                if (p.tile < targetTile) {
+                    p.tile++;
+                    renderPawns();
+                    stepCount++;
+                } else {
+                    clearInterval(interval);
+                    // Finished step-by-step physical movement
+                    setTimeout(() => {
+                        evaluateTileLanding(playerIdx);
+                    }, 400);
+                }
+            }, 250);
+        }
+
+        function evaluateTileLanding(playerIdx) {
+            const p = players[playerIdx];
+            const tile = p.tile;
+            const statusText = document.getElementById('gameStatusText');
+
+            // 1. Check Ladder Landing
+            if (LADDERS[tile]) {
+                const dest = LADDERS[tile];
+                statusText.innerHTML = `<span class="text-amber-400 font-bold"><i class="fa-solid fa-ladder mr-1"></i> WOW! Landed on a Ladder! Climbing from ${tile} to ${dest}!</span>`;
+                setTimeout(() => {
+                    p.tile = dest;
+                    renderPawns();
+                    finishTurn();
+                }, 800);
+                return;
+            }
+
+            // 2. Check Snake Landing
+            if (SNAKES[tile]) {
+                const dest = SNAKES[tile];
+                statusText.innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-staff-snake mr-1"></i> OOPS! Landed on a Snake! Sliding from ${tile} down to ${dest}!</span>`;
+                setTimeout(() => {
+                    p.tile = dest;
+                    renderPawns();
+                    finishTurn();
+                }, 800);
+                return;
+            }
+
+            // 3. Check Victory (Tile 30)
+            if (p.tile === 30) {
+                showVictoryModal(p);
+                return;
+            }
+
+            // 4. Check Trivia Challenge Tile
+            if (TRIVIA_TILES.includes(tile)) {
+                statusText.textContent = `Landed on Challenge Tile ${tile}! Answer the question!`;
+                triggerQuestionModal(playerIdx);
+                return;
+            }
+
+            // Normal Tile Landing
+            statusText.textContent = `${p.name} safely landed on Tile ${tile}.`;
+            finishTurn();
+        }
+
+        function finishTurn() {
+            isRolling = false;
+            const btn = document.getElementById('btnRollDice');
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            // Switch to next player
+            activePlayerIndex = (activePlayerIndex + 1) % playerCount;
+            updateTurnUI();
+        }
+
+        function updateTurnUI() {
+            const currentP = players[activePlayerIndex];
+            document.getElementById('turnCounter').textContent = `Player ${activePlayerIndex + 1} of ${playerCount}`;
+            document.getElementById('activePlayerName').textContent = currentP.name;
+            document.getElementById('activePlayerTile').textContent = `Currently on Tile ${currentP.tile}`;
+
+            const avatar = document.getElementById('activePlayerAvatar');
+            avatar.className = `w-10 h-10 rounded-full ${currentP.colorClass} flex items-center justify-center font-bold text-lg shadow`;
+            avatar.textContent = `P${currentP.id + 1}`;
+        }
+
+        function updatePlayersListUI() {
+            const list = document.getElementById('playersList');
+            list.innerHTML = '';
+
+            players.forEach((p) => {
+                const isCurrent = p.id === activePlayerIndex;
+                const row = document.createElement('div');
+                row.className = `flex justify-between items-center p-2 rounded-xl border text-xs font-bold transition-all ${
+                    isCurrent ? 'bg-amber-950/60 border-amber-500/80 text-amber-200' : 'bg-stone-950/40 border-stone-800 text-stone-400'
+                }`;
+
+                row.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full ${p.colorClass} flex items-center justify-center text-[10px] text-white">
+                            P${p.id + 1}
+                        </div>
+                        <span>${p.name}</span>
+                    </div>
+                    <span class="font-mono bg-stone-900 px-2 py-0.5 rounded border border-stone-700 text-amber-300">
+                        Tile ${p.tile}
+                    </span>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        function resetGame() {
+            initPlayers();
+            renderPawns();
+            updateTurnUI();
+            isRolling = false;
+            const btn = document.getElementById('btnRollDice');
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('gameStatusText').textContent = "Game reset! Roll the dice to start.";
+        }
+
+        /* ==================== TRIVIA QUESTION MODAL LOGIC ==================== */
+
+        function triggerQuestionModal(playerIdx) {
+            if (questionsList.length === 0) {
+                finishTurn();
+                return;
+            }
+
+            // Pick a random question from bank
+            const randomQ = questionsList[Math.floor(Math.random() * questionsList.length)];
+            currentQuestionObj = randomQ;
+
+            document.getElementById('modalSpeakerTag').textContent = randomQ.category || "Classroom Trivia";
+            document.getElementById('modalQuestionText').textContent = randomQ.prompt;
+
+            const optsContainer = document.getElementById('modalOptionsContainer');
+            optsContainer.innerHTML = '';
+
+            const feedback = document.getElementById('modalFeedback');
+            feedback.className = "hidden p-3 rounded-xl text-center font-bold text-xs sm:text-sm mb-4";
+
+            // Shuffle options for display
+            const optionsWithOrigIndex = randomQ.options.map((opt, idx) => ({ text: opt, isCorrect: idx === randomQ.answer }));
+            optionsWithOrigIndex.sort(() => Math.random() - 0.5);
+
+            optionsWithOrigIndex.forEach((optObj) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3 rounded-xl border-2 border-stone-300 hover:border-amber-600 bg-white hover:bg-amber-50 font-semibold text-xs sm:text-sm text-stone-800 transition-all flex items-center justify-between";
+                btn.innerHTML = `<span>${optObj.text}</span> <i class="fa-regular fa-circle text-stone-400"></i>`;
+                
+                btn.onclick = () => handleAnswerSubmit(optObj.isCorrect, btn);
+                optsContainer.appendChild(btn);
+            });
+
+            document.getElementById('questionModal').classList.remove('hidden');
+        }
+
+        function handleAnswerSubmit(isCorrect, clickedBtn) {
+            const feedback = document.getElementById('modalFeedback');
+            const p = players[activePlayerIndex];
+
+            // Disable all option buttons
+            const allBtns = document.getElementById('modalOptionsContainer').querySelectorAll('button');
+            allBtns.forEach(b => b.disabled = true);
+
+            if (isCorrect) {
+                clickedBtn.className = "w-full text-left p-3 rounded-xl border-2 border-emerald-600 bg-emerald-100 font-bold text-xs sm:text-sm text-emerald-900 flex items-center justify-between";
+                clickedBtn.querySelector('i').className = "fa-solid fa-circle-check text-emerald-600 text-base";
+
+                feedback.textContent = "CORRECT ANSWER! You maintain your position!";
+                feedback.className = "p-3 rounded-xl text-center font-bold text-xs sm:text-sm mb-4 bg-emerald-100 text-emerald-900 border border-emerald-300 block";
+            } else {
+                clickedBtn.className = "w-full text-left p-3 rounded-xl border-2 border-rose-600 bg-rose-100 font-bold text-xs sm:text-sm text-rose-900 flex items-center justify-between";
+                clickedBtn.querySelector('i').className = "fa-solid fa-circle-xmark text-rose-600 text-base";
+
+                feedback.textContent = "INCORRECT! Penalty: Slide back 2 steps!";
+                feedback.className = "p-3 rounded-xl text-center font-bold text-xs sm:text-sm mb-4 bg-rose-100 text-rose-900 border border-rose-300 block";
+
+                // Slide back 2 tiles penalty
+                p.tile = Math.max(1, p.tile - 2);
+            }
+
+            setTimeout(() => {
+                document.getElementById('questionModal').classList.add('hidden');
+                renderPawns();
+                finishTurn();
+            }, 1800);
+        }
+
+        function showVictoryModal(winnerPlayer) {
+            document.getElementById('winnerMessage').textContent = `${winnerPlayer.name} Wins the Game! 🎉`;
+            document.getElementById('victoryModal').classList.remove('hidden');
+        }
+
+        function closeVictoryModal() {
+            document.getElementById('victoryModal').classList.add('hidden');
+        }
+
+        function openRulesModal() {
+            document.getElementById('rulesModal').classList.remove('hidden');
+        }
+
+        function closeRulesModal() {
+            document.getElementById('rulesModal').classList.add('hidden');
+        }
+
+        /* ==================== VIEW SWITCHING & QUESTION BANK EDITING ==================== */
+
+        function switchView(view) {
+            const gameV = document.getElementById('gameView');
+            const qV = document.getElementById('questionsView');
+            const btnG = document.getElementById('btnGameView');
+            const btnQ = document.getElementById('btnQuestionsView');
+
+            if (view === 'game') {
+                gameV.classList.remove('hidden');
+                qV.classList.add('hidden');
+                btnG.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition-all";
+                btnQ.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700 transition-all";
+                // Redraw SVG in case of layout changes
+                setTimeout(drawSnakesAndLaddersSvg, 100);
+            } else {
+                gameV.classList.add('hidden');
+                qV.classList.remove('hidden');
+                btnQ.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition-all";
+                btnG.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700 transition-all";
+            }
+        }
+
+        function renderQuestionsTable() {
+            const tbody = document.getElementById('questionsTableBody');
+            tbody.innerHTML = '';
+
+            if (questionsList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-stone-500 italic">No questions in bank. Add some above!</td></tr>`;
+                return;
+            }
+
+            questionsList.forEach((q, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-stone-800/40 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-stone-500">${idx + 1}</td>
+                    <td class="py-3 px-4 font-bold text-amber-300 text-xs">${q.category}</td>
+                    <td class="py-3 px-4 font-medium text-stone-200">${q.prompt}</td>
+                    <td class="py-3 px-4 text-emerald-400 font-semibold">${q.options[q.answer]}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="editQuestion(${idx})" class="p-1 text-stone-400 hover:text-amber-400 transition-colors"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteQuestion(${idx})" class="p-1 text-stone-400 hover:text-rose-400 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function handleQuestionSubmit(e) {
+            e.preventDefault();
+            const editIdx = parseInt(document.getElementById('editQIndex').value);
+            const prompt = document.getElementById('qPrompt').value.trim();
+            const category = document.getElementById('qCategory').value;
+            const optA = document.getElementById('qOptA').value.trim();
+            const optB = document.getElementById('qOptB').value.trim();
+            const optC = document.getElementById('qOptC').value.trim();
+            const optD = document.getElementById('qOptD').value.trim();
+
+            if (!prompt || !optA) return;
+
+            const newQ = {
+                prompt: prompt,
+                category: category,
+                options: [optA, optB, optC, optD],
+                answer: 0 // First option is always correct
+            };
+
+            if (editIdx >= 0) {
+                questionsList[editIdx] = newQ;
+            } else {
+                questionsList.push(newQ);
+            }
+
+            saveQuestionsToStorage();
+            renderQuestionsTable();
+            cancelQEdit();
+        }
+
+        function editQuestion(idx) {
+            const q = questionsList[idx];
+            document.getElementById('editQIndex').value = idx;
+            document.getElementById('qPrompt').value = q.prompt;
+            document.getElementById('qCategory').value = q.category;
+            document.getElementById('qOptA').value = q.options[0];
+            document.getElementById('qOptB').value = q.options[1];
+            document.getElementById('qOptC').value = q.options[2];
+            document.getElementById('qOptD').value = q.options[3];
+
+            document.getElementById('btnSaveQ').innerHTML = `<i class="fa-solid fa-check mr-1"></i> Update Question`;
+            document.getElementById('btnCancelQ').classList.remove('hidden');
+        }
+
+        function cancelQEdit() {
+            document.getElementById('editQIndex').value = "-1";
+            document.getElementById('questionForm').reset();
+            document.getElementById('btnSaveQ').innerHTML = `<i class="fa-solid fa-plus mr-1"></i> Add Question`;
+            document.getElementById('btnCancelQ').classList.add('hidden');
+        }
+
+        function deleteQuestion(idx) {
+            questionsList.splice(idx, 1);
+            saveQuestionsToStorage();
+            renderQuestionsTable();
+        }
+
+        function loadDefaultQuestions() {
+            if (confirm("Restore default English presentation questions?")) {
+                questionsList = [...DEFAULT_QUESTIONS];
+                saveQuestionsToStorage();
+                renderQuestionsTable();
+            }
+        }
+
+        function saveQuestionsToStorage() {
+            localStorage.setItem('snakes_questions_en', JSON.stringify(questionsList));
+        }
+    </script>
+</body>
+</html>
